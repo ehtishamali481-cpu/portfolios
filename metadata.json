@@ -1,0 +1,6 @@
+{
+  "name": "Developer Portfolio & Dashboard",
+  "description": "A full-stack modern portfolio with a secure dashboard to view and manage client messages, responsive design, and light/dark theme toggle.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
