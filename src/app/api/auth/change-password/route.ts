@@ -4,6 +4,8 @@ import { connectMongoDB } from '@/lib/mongodb';
 import { Admin } from '@/models/Admin';
 import { verifyAuthToken, sanitizeInput } from '@/lib/auth';
 
+export const dynamic = 'force-dynamic';
+
 export async function PUT(req: Request) {
   try {
     const user = verifyAuthToken(req as any);
