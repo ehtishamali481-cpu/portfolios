@@ -1,18 +1,19 @@
 {
+  "/_global-error/page": "/_global-error",
+  "/_not-found/page": "/_not-found",
+  "/api/auth/change-password/route": "/api/auth/change-password",
+  "/api/auth/login/route": "/api/auth/login",
   "/api/auth/me/route": "/api/auth/me",
   "/api/auth/refresh/route": "/api/auth/refresh",
-  "/_not-found/page": "/_not-found",
-  "/api/auth/login/route": "/api/auth/login",
   "/api/contact/route": "/api/contact",
   "/api/experiences/[id]/route": "/api/experiences/[id]",
-  "/api/messages/[id]/read/route": "/api/messages/[id]/read",
   "/api/experiences/route": "/api/experiences",
+  "/api/messages/[id]/read/route": "/api/messages/[id]/read",
   "/api/messages/[id]/route": "/api/messages/[id]",
   "/api/messages/route": "/api/messages",
   "/api/projects/[id]/route": "/api/projects/[id]",
   "/api/projects/route": "/api/projects",
   "/api/skills/[id]/route": "/api/skills/[id]",
   "/api/skills/route": "/api/skills",
-  "/api/auth/change-password/route": "/api/auth/change-password",
   "/page": "/"
 }

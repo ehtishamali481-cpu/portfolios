@@ -1,6 +1,7 @@
 {
   "version": 3,
   "pages404": true,
+  "appType": "app",
   "caseSensitive": false,
   "basePath": "",
   "redirects": [
@@ -8,11 +9,18 @@
       "source": "/:path+/",
       "destination": "/:path+",
       "internal": true,
+      "priority": true,
       "statusCode": 308,
       "regex": "^(?:/((?:[^/]+?)(?:/(?:[^/]+?))*))/$"
     }
   ],
   "headers": [],
+  "onMatchHeaders": [],
+  "rewrites": {
+    "beforeFiles": [],
+    "afterFiles": [],
+    "fallback": []
+  },
   "dynamicRoutes": [
     {
       "page": "/api/experiences/[id]",
@@ -63,28 +71,88 @@
       "namedRegex": "^/(?:/)?$"
     },
     {
+      "page": "/_global-error",
+      "regex": "^/_global\\-error(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/_global\\-error(?:/)?$"
+    },
+    {
       "page": "/_not-found",
       "regex": "^/_not\\-found(?:/)?$",
       "routeKeys": {},
       "namedRegex": "^/_not\\-found(?:/)?$"
+    },
+    {
+      "page": "/api/auth/change-password",
+      "regex": "^/api/auth/change\\-password(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/auth/change\\-password(?:/)?$"
+    },
+    {
+      "page": "/api/auth/login",
+      "regex": "^/api/auth/login(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/auth/login(?:/)?$"
+    },
+    {
+      "page": "/api/auth/me",
+      "regex": "^/api/auth/me(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/auth/me(?:/)?$"
+    },
+    {
+      "page": "/api/auth/refresh",
+      "regex": "^/api/auth/refresh(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/auth/refresh(?:/)?$"
+    },
+    {
+      "page": "/api/contact",
+      "regex": "^/api/contact(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/contact(?:/)?$"
+    },
+    {
+      "page": "/api/experiences",
+      "regex": "^/api/experiences(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/experiences(?:/)?$"
+    },
+    {
+      "page": "/api/messages",
+      "regex": "^/api/messages(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/messages(?:/)?$"
+    },
+    {
+      "page": "/api/projects",
+      "regex": "^/api/projects(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/projects(?:/)?$"
+    },
+    {
+      "page": "/api/skills",
+      "regex": "^/api/skills(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/skills(?:/)?$"
     }
   ],
   "dataRoutes": [],
   "rsc": {
-    "header": "RSC",
-    "varyHeader": "RSC, Next-Router-State-Tree, Next-Router-Prefetch, Next-Router-Segment-Prefetch",
-    "prefetchHeader": "Next-Router-Prefetch",
+    "header": "rsc",
+    "varyHeader": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch",
+    "prefetchHeader": "next-router-prefetch",
     "didPostponeHeader": "x-nextjs-postponed",
     "contentTypeHeader": "text/x-component",
     "suffix": ".rsc",
-    "prefetchSuffix": ".prefetch.rsc",
-    "prefetchSegmentHeader": "Next-Router-Segment-Prefetch",
+    "prefetchSegmentHeader": "next-router-segment-prefetch",
     "prefetchSegmentSuffix": ".segment.rsc",
-    "prefetchSegmentDirSuffix": ".segments"
+    "prefetchSegmentDirSuffix": ".segments",
+    "clientParamParsing": false,
+    "dynamicRSCPrerender": false
   },
   "rewriteHeaders": {
     "pathHeader": "x-nextjs-rewritten-path",
     "queryHeader": "x-nextjs-rewritten-query"
-  },
-  "rewrites": []
+  }
 }

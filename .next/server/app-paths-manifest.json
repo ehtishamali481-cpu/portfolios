@@ -1,18 +1,19 @@
 {
+  "/_global-error/page": "app/_global-error/page.js",
+  "/_not-found/page": "app/_not-found/page.js",
+  "/api/auth/change-password/route": "app/api/auth/change-password/route.js",
+  "/api/auth/login/route": "app/api/auth/login/route.js",
   "/api/auth/me/route": "app/api/auth/me/route.js",
   "/api/auth/refresh/route": "app/api/auth/refresh/route.js",
-  "/_not-found/page": "app/_not-found/page.js",
-  "/api/auth/login/route": "app/api/auth/login/route.js",
   "/api/contact/route": "app/api/contact/route.js",
   "/api/experiences/[id]/route": "app/api/experiences/[id]/route.js",
-  "/api/messages/[id]/read/route": "app/api/messages/[id]/read/route.js",
   "/api/experiences/route": "app/api/experiences/route.js",
+  "/api/messages/[id]/read/route": "app/api/messages/[id]/read/route.js",
   "/api/messages/[id]/route": "app/api/messages/[id]/route.js",
   "/api/messages/route": "app/api/messages/route.js",
   "/api/projects/[id]/route": "app/api/projects/[id]/route.js",
   "/api/projects/route": "app/api/projects/route.js",
   "/api/skills/[id]/route": "app/api/skills/[id]/route.js",
   "/api/skills/route": "app/api/skills/route.js",
-  "/api/auth/change-password/route": "app/api/auth/change-password/route.js",
   "/page": "app/page.js"
 }
