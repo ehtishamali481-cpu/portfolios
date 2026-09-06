@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { ArrowDown, Mail, Briefcase, ChevronRight, Code2, Database, Terminal } from 'lucide-react';
 const avatarImg = '/images/profile.jpeg';
@@ -11,6 +11,50 @@ interface HeroProps {
 }
 
 const Hero = ({ onContactClick, onProjectsClick }: HeroProps) => {
+  const items = [
+    {
+      text: "Hi, I'm Ehtisham.",
+      color:
+        'bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 bg-clip-text text-transparent',
+    },
+    {
+      text: 'Full-Stack MERN Developer building web applications.',
+      color:
+        'bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 bg-clip-text text-transparent',
+    },
+  ];
+
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [displayText, setDisplayText] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  useEffect(() => {
+    const currentItem = items[currentIndex];
+    const fullText = currentItem.text;
+
+    let timeout: NodeJS.Timeout;
+
+    if (!isDeleting && displayText === fullText) {
+      timeout = setTimeout(() => {
+        setIsDeleting(true);
+      }, 2000);
+    } else if (isDeleting && displayText === '') {
+      setIsDeleting(false);
+      setCurrentIndex((prev) => (prev + 1) % items.length);
+    } else {
+      const typingSpeed = isDeleting ? 25 : 45;
+      timeout = setTimeout(() => {
+        setDisplayText((prev) =>
+          isDeleting
+            ? fullText.substring(0, prev.length - 1)
+            : fullText.substring(0, prev.length + 1)
+        );
+      }, typingSpeed);
+    }
+
+    return () => clearTimeout(timeout);
+  }, [displayText, isDeleting, currentIndex, items]);
+
   return (
     <section
       id="hero"
@@ -31,27 +75,38 @@ const Hero = ({ onContactClick, onProjectsClick }: HeroProps) => {
               <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
               Available for Freelance & Remote Work
             </motion.div>
+
             <motion.h1
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.15 }}
-              className="text-2xl font-extrabold tracking-tight text-zinc-900 sm:text-4xl md:text-5xl lg:text-6xl dark:text-zinc-50 leading-tight"
+              className="text-2xl font-extrabold tracking-tight text-zinc-900 sm:text-3xl md:text-4xl lg:text-4xl dark:text-zinc-50 leading-tight"
             >
               Building Production-Ready <br />
               <span className="bg-gradient-to-r from-zinc-900 via-zinc-700 to-zinc-900 bg-clip-text text-transparent dark:from-white dark:via-zinc-300 dark:to-white">
                 Full-Stack MERN Apps
               </span>
             </motion.h1>
+            <div className="relative h-16 sm:h-12 flex items-center">
+              <p className="text-lg font-bold sm:text-xl leading-snug">
+                <span className={items[currentIndex].color}>
+                  {displayText}
+                </span>
+                <span className="ml-1 inline-block h-5 w-[2px] bg-zinc-900 align-middle animate-pulse dark:bg-zinc-100" />
+              </p>
+            </div>
+
             <motion.p
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.3 }}
               className="max-w-xl text-base sm:text-lg leading-relaxed text-zinc-600 dark:text-zinc-400"
             >
-              Hi, I am a passionate Full Stack Developer specializing in React, Next.js,
-              Node.js, Express, and MongoDB. I design and build secure, blazing fast, and
-              highly responsive web experiences using state-of-the-art cloud tools.
+              Passionate about specializing in React, Next.js, Node.js, Express, and MongoDB.
+              I design and build secure, blazing fast, and highly responsive web experiences
+              using state-of-the-art cloud tools.
             </motion.p>
+
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -74,10 +129,11 @@ const Hero = ({ onContactClick, onProjectsClick }: HeroProps) => {
                 id="hero-cta-contact"
               >
                 <Mail className="h-4 w-4" />
-                Let's Talk
+                Let&apos;s Talk
               </button>
             </motion.div>
           </div>
+
           <div className="relative flex justify-center lg:col-span-5 lg:justify-end">
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
@@ -120,8 +176,8 @@ const Hero = ({ onContactClick, onProjectsClick }: HeroProps) => {
               </motion.div>
             </motion.div>
           </div>
-
         </div>
+
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -145,6 +201,7 @@ const Hero = ({ onContactClick, onProjectsClick }: HeroProps) => {
             <span className="hover:text-zinc-800 dark:hover:text-zinc-300 transition-colors cursor-default">TypeScript</span>
           </div>
         </motion.div>
+
         <motion.div
           animate={{ y: [0, 8, 0] }}
           transition={{ repeat: Infinity, duration: 1.5 }}

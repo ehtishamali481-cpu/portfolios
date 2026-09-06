@@ -9,10 +9,10 @@ import ExperienceSection from '@/components/ExperienceSection';
 import ContactForm from '@/components/ContactForm';
 import Login from '@/components/Login';
 import Dashboard from '@/components/Dashboard';
-import { Project, Experience, Skill } from '@/types';
-import { Loader2, Heart } from 'lucide-react';
+import { Heart } from 'lucide-react';
+import { PortfolioProvider, usePortfolio } from '@/context/PortfolioContext';
 
-export default function HomePage() {
+function PortfolioContent() {
   const [darkMode, setDarkMode] = useState<boolean>(true);
   const [mounted, setMounted] = useState(false);
 
@@ -20,18 +20,12 @@ export default function HomePage() {
   const [showDashboard, setShowDashboard] = useState(false);
   const [token, setToken] = useState<string | null>(null);
 
-  // Database states
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [experiences, setExperiences] = useState<Experience[]>([]);
-  const [skills, setSkills] = useState<Skill[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { projects, experiences, skills, refetchAll } = usePortfolio();
 
-  // Initialize client state safely on mount
   useEffect(() => {
     setMounted(true);
     const saved = localStorage.getItem('theme');
 
-    // Agar pehle se explicitly 'light' saved nahi hai, toh default TRUE (Dark Mode) rakhein
     if (saved === 'light') {
       setDarkMode(false);
     } else {
@@ -41,7 +35,6 @@ export default function HomePage() {
     setToken(localStorage.getItem('adminToken'));
   }, []);
 
-  // 2. Apply dark mode theme to HTML element
   useEffect(() => {
     if (!mounted) return;
     if (darkMode) {
@@ -53,51 +46,13 @@ export default function HomePage() {
     }
   }, [darkMode, mounted]);
 
-  // Load public portfolio data
-  const loadPortfolioData = async () => {
-    try {
-      const [projRes, expRes, skillRes] = await Promise.all([
-        fetch('/api/projects'),
-        fetch('/api/experiences'),
-        fetch('/api/skills'),
-      ]);
-
-      const parseData = async (res: Response) => {
-        if (!res.ok) return [];
-        const json = await res.json();
-        if (Array.isArray(json)) return json;
-        if (json && json.success && Array.isArray(json.data)) return json.data;
-        return [];
-      };
-
-      const [pData, eData, sData] = await Promise.all([
-        parseData(projRes),
-        parseData(expRes),
-        parseData(skillRes),
-      ]);
-
-      setProjects(pData);
-      setExperiences(eData);
-      setSkills(sData);
-    } catch (err) {
-      console.error('Error loading portfolio data', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    loadPortfolioData();
-  }, []);
-
-  // Handle successful login
   const handleLoginSuccess = (newToken: string, newUsername: string) => {
     setToken(newToken);
     localStorage.setItem('adminToken', newToken);
     localStorage.setItem('adminUsername', newUsername);
+    refetchAll();
   };
 
-  // Handle logout
   const handleLogout = () => {
     setToken(null);
     localStorage.removeItem('adminToken');
@@ -105,7 +60,6 @@ export default function HomePage() {
     setShowDashboard(false);
   };
 
-  // Handle JWT token refresh
   const handleTokenRefresh = (newToken: string) => {
     setToken(newToken);
     localStorage.setItem('adminToken', newToken);
@@ -135,14 +89,7 @@ export default function HomePage() {
           showDashboard={showDashboard}
         />
 
-        {loading ? (
-          <div className="flex h-[calc(100vh-4rem)] items-center justify-center bg-white dark:bg-zinc-950">
-            <div className="text-center space-y-4">
-              <Loader2 className="h-10 w-10 animate-spin text-zinc-900 dark:text-zinc-50 mx-auto" />
-              <p className="text-sm font-semibold tracking-wide text-zinc-500">Loading Portfolio...</p>
-            </div>
-          </div>
-        ) : showDashboard ? (
+        {showDashboard ? (
           /* Secure Dashboard View */
           token ? (
             <Dashboard
@@ -154,7 +101,7 @@ export default function HomePage() {
             <Login onLoginSuccess={handleLoginSuccess} />
           )
         ) : (
-          /* Public Portfolio View */
+          /* Public Portfolio View - Zero Blocking Instant Render */
           <div>
             <Hero
               onContactClick={() => scrollToSection('contact')}
@@ -193,3 +140,12 @@ export default function HomePage() {
     </div>
   );
 }
+
+export default function HomePage() {
+  return (
+    <PortfolioProvider>
+      <PortfolioContent />
+    </PortfolioProvider>
+  );
+}
+

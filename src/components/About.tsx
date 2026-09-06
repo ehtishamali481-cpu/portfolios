@@ -1,5 +1,6 @@
 import { Skill } from '../types';
 import { motion } from 'motion/react';
+import { usePortfolio } from '@/context/PortfolioContext';
 import {
   Code2,
   Server,
@@ -15,7 +16,7 @@ import {
 } from 'lucide-react';
 
 interface AboutProps {
-  skills: Skill[];
+  skills?: Skill[];
 }
 
 const getSkillMeta = (skillName: string) => {
@@ -92,31 +93,34 @@ const getSkillMeta = (skillName: string) => {
   };
 };
 
-const About = ({ skills }: AboutProps) => {
+const About = ({ skills: propSkills }: AboutProps) => {
+  const { skills: contextSkills } = usePortfolio();
+  const skillsList = propSkills || contextSkills || [];
+
   const categoryList = [
     {
       key: 'frontend',
       label: 'Frontend Development',
       icon: <Code2 className="h-5 w-5 text-indigo-500" />,
-      items: skills.filter((s) => s.category === 'frontend'),
+      items: skillsList.filter((s) => s.category === 'frontend'),
     },
     {
       key: 'backend',
       label: 'Backend Development',
       icon: <Server className="h-5 w-5 text-emerald-500" />,
-      items: skills.filter((s) => s.category === 'backend'),
+      items: skillsList.filter((s) => s.category === 'backend'),
     },
     {
       key: 'database',
       label: 'Database Systems',
       icon: <Database className="h-5 w-5 text-amber-500" />,
-      items: skills.filter((s) => s.category === 'database'),
+      items: skillsList.filter((s) => s.category === 'database'),
     },
     {
       key: 'other',
       label: 'Other Tools & DevOps',
       icon: <Sparkles className="h-5 w-5 text-purple-500" />,
-      items: skills.filter((s) => s.category === 'other'),
+      items: skillsList.filter((s) => s.category === 'other'),
     },
   ];
 

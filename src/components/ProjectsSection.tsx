@@ -11,18 +11,21 @@ import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 
+import { usePortfolio } from '@/context/PortfolioContext';
+
 interface ProjectsSectionProps {
-  projects: Project[];
+  projects?: Project[];
 }
 
-const ProjectsSection = ({ projects }: ProjectsSectionProps) => {
+const ProjectsSection = ({ projects: propProjects }: ProjectsSectionProps) => {
+  const { projects: contextProjects, projectsLoading } = usePortfolio();
+  const projectsList = propProjects || contextProjects || [];
   const [filter, setFilter] = useState('All');
 
-
-  const categories = ['All', ...Array.from(new Set(projects.map((p) => p.category)))];
+  const categories = ['All', ...Array.from(new Set(projectsList.map((p) => p.category)))];
 
   const filteredProjects =
-    filter === 'All' ? projects : projects.filter((p) => p.category === filter);
+    filter === 'All' ? projectsList : projectsList.filter((p) => p.category === filter);
 
   return (
     <section
@@ -57,8 +60,25 @@ const ProjectsSection = ({ projects }: ProjectsSectionProps) => {
           </div>
         )}
 
-
-        {filteredProjects.length === 0 ? (
+        {projectsLoading && filteredProjects.length === 0 ? (
+          <div className="mt-12 grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+            {[1, 2, 3].map((i) => (
+              <div
+                key={i}
+                className="animate-pulse rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900/40"
+              >
+                <div className="h-44 w-full rounded-lg bg-zinc-200 dark:bg-zinc-800 mb-4" />
+                <div className="h-5 w-3/4 rounded bg-zinc-200 dark:bg-zinc-800 mb-2" />
+                <div className="h-4 w-full rounded bg-zinc-200 dark:bg-zinc-800 mb-1" />
+                <div className="h-4 w-2/3 rounded bg-zinc-200 dark:bg-zinc-800 mb-4" />
+                <div className="flex gap-2">
+                  <div className="h-6 w-16 rounded bg-zinc-200 dark:bg-zinc-800" />
+                  <div className="h-6 w-16 rounded bg-zinc-200 dark:bg-zinc-800" />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : filteredProjects.length === 0 ? (
           <div className="mt-12 rounded-xl border border-dashed border-zinc-300 py-16 text-center dark:border-zinc-800">
             <FolderGit2 className="mx-auto h-8 w-8 text-zinc-400" />
             <p className="mt-3 text-sm text-zinc-500">No projects available.</p>

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Project, Experience, Skill, Message } from '../types';
+import { usePortfolio } from '@/context/PortfolioContext';
 import {
   FolderGit2,
   Briefcase,
@@ -34,6 +35,7 @@ interface DashboardProps {
 type TabType = 'messages' | 'projects' | 'skills' | 'experiences' | 'security';
 
 const Dashboard = ({ token, onLogout, onTokenRefresh }: DashboardProps) => {
+  const { refetchAll } = usePortfolio();
   const [activeTab, setActiveTab] = useState<TabType>('messages');
   const [isRefreshingToken, setIsRefreshingToken] = useState(false);
 
@@ -260,6 +262,7 @@ const Dashboard = ({ token, onLogout, onTokenRefresh }: DashboardProps) => {
         );
         setIsProjectModalOpen(false);
         fetchData();
+        refetchAll();
       } else {
         const result = await response.json();
         showNotification('error', result.error || 'Failed to save project.');
@@ -279,6 +282,7 @@ const Dashboard = ({ token, onLogout, onTokenRefresh }: DashboardProps) => {
       });
       if (response.ok) {
         setProjects((prev) => prev.filter((p) => (p.id || p._id) !== projId));
+        refetchAll();
         showNotification('success', 'Project deleted successfully.');
       } else {
         const result = await response.json();
