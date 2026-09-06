@@ -17,10 +17,10 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist
 ;
 ;
 const metadata = {
-    title: 'Developer Portfolio & Dashboard',
+    title: 'Ehtisham | Full-Stack MERN Developer',
     description: 'A full-stack modern portfolio with a secure dashboard to view and manage client messages, responsive design, and light/dark theme toggle.',
     openGraph: {
-        title: 'Developer Portfolio & Dashboard',
+        title: 'Ehtisham | Full-Stack MERN Developer',
         description: 'A full-stack modern portfolio with a secure dashboard to view and manage client messages, responsive design, and light/dark theme toggle.',
         type: 'website'
     },

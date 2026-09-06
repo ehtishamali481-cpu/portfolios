@@ -2,11 +2,11 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Developer Portfolio & Dashboard',
+  title: 'Ehtisham | Full-Stack MERN Developer',
   description:
     'A full-stack modern portfolio with a secure dashboard to view and manage client messages, responsive design, and light/dark theme toggle.',
   openGraph: {
-    title: 'Developer Portfolio & Dashboard',
+    title: 'Ehtisham | Full-Stack MERN Developer',
     description:
       'A full-stack modern portfolio with a secure dashboard to view and manage client messages, responsive design, and light/dark theme toggle.',
     type: 'website',
