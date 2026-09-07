@@ -73,7 +73,7 @@ const Hero = ({ onContactClick, onProjectsClick }: HeroProps) => {
               className="inline-flex items-center gap-1.5 rounded-full border border-zinc-200 bg-white/80 px-4 py-1.5 text-xs font-semibold tracking-wide text-zinc-800 backdrop-blur-sm dark:border-zinc-800 dark:bg-zinc-900/80 dark:text-zinc-200"
             >
               <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-              Available for Freelance & Remote Work
+              Available for Freelance, Remote & Onsite Work
             </motion.div>
 
             <motion.h1

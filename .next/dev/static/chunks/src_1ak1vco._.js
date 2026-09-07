@@ -4347,7 +4347,7 @@ const Hero = ({ onContactClick, onProjectsClick })=>{
                                                 lineNumber: 75,
                                                 columnNumber: 15
                                             }, ("TURBOPACK compile-time value", void 0)),
-                                            "Available for Freelance & Remote Work"
+                                            "Available for Freelance, Remote & Onsite Work"
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/components/Hero.tsx",
