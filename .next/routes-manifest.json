@@ -23,6 +23,14 @@
   },
   "dynamicRoutes": [
     {
+      "page": "/api/certificates/[id]",
+      "regex": "^/api/certificates/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPid": "nxtPid"
+      },
+      "namedRegex": "^/api/certificates/(?<nxtPid>[^/]+?)(?:/)?$"
+    },
+    {
       "page": "/api/experiences/[id]",
       "regex": "^/api/experiences/([^/]+?)(?:/)?$",
       "routeKeys": {
@@ -83,6 +91,12 @@
       "namedRegex": "^/_not\\-found(?:/)?$"
     },
     {
+      "page": "/api/analytics",
+      "regex": "^/api/analytics(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/analytics(?:/)?$"
+    },
+    {
       "page": "/api/auth/change-password",
       "regex": "^/api/auth/change\\-password(?:/)?$",
       "routeKeys": {},
@@ -105,6 +119,12 @@
       "regex": "^/api/auth/refresh(?:/)?$",
       "routeKeys": {},
       "namedRegex": "^/api/auth/refresh(?:/)?$"
+    },
+    {
+      "page": "/api/certificates",
+      "regex": "^/api/certificates(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/certificates(?:/)?$"
     },
     {
       "page": "/api/contact",
@@ -135,6 +155,18 @@
       "regex": "^/api/skills(?:/)?$",
       "routeKeys": {},
       "namedRegex": "^/api/skills(?:/)?$"
+    },
+    {
+      "page": "/icon.svg",
+      "regex": "^/icon\\.svg(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/icon\\.svg(?:/)?$"
+    },
+    {
+      "page": "/projects",
+      "regex": "^/projects(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/projects(?:/)?$"
     }
   ],
   "dataRoutes": [],

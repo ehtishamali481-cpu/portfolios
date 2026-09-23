@@ -1,4 +1,13 @@
 
+export interface Certificate {
+  id: string;
+  _id?: string;
+  title: string;
+  image: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 export interface Project {
   id: string;
   _id?: string;
@@ -10,6 +19,7 @@ export interface Project {
   github?: string;
   link?: string;
   testCasesLink?: string;
+  featured?: boolean;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -29,7 +39,7 @@ export interface Skill {
   id: string;
   _id?: string;
   name: string;
-  category: 'frontend' | 'backend' | 'database' | 'other';
+  category: 'frontend' | 'backend' | 'database' | 'other' | 'testing';
   level: number;
   createdAt?: string;
   updatedAt?: string;
@@ -58,5 +68,35 @@ export interface DatabaseSchema {
   experiences: Experience[];
   skills: Skill[];
   admin: AdminData;
+}
+
+export interface PageViewItem {
+  id?: string;
+  _id?: string;
+  deviceId?: string;
+  ip?: string;
+  device: 'Mobile' | 'Desktop' | 'Tablet' | 'Other';
+  browser: string;
+  os: string;
+  country: string;
+  countryCode?: string;
+  city: string;
+  path: string;
+  referrer?: string;
+  screenResolution?: string;
+  visitCount?: number;
+  lastVisitedAt?: string;
+  createdAt: string;
+}
+
+export interface AnalyticsSummary {
+  totalViews: number;
+  uniqueVisitors: number;
+  viewsToday: number;
+  devices: { name: string; count: number; percentage: number }[];
+  locations: { country: string; city: string; countryCode?: string; count: number; percentage: number }[];
+  browsers: { name: string; count: number; percentage: number }[];
+  os: { name: string; count: number; percentage: number }[];
+  recentVisits: PageViewItem[];
 }
 

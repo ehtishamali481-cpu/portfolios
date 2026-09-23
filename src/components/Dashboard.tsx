@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Project, Experience, Skill, Message } from '../types';
+import { Project, Experience, Skill, Message, Certificate, AnalyticsSummary } from '../types';
 import { usePortfolio } from '@/context/PortfolioContext';
 import {
   FolderGit2,
@@ -18,11 +18,20 @@ import {
   Search,
   ExternalLink,
   Github,
-  FileSpreadsheet,
   Check,
   KeyRound,
   Inbox,
   AlertCircle,
+  Award,
+  Star,
+  Activity,
+  Smartphone,
+  Monitor,
+  Tablet as TabletIcon,
+  Globe,
+  MapPin,
+  Users,
+  Laptop,
 } from 'lucide-react';
 const avatarImg = '/images/profile.jpeg';
 
@@ -32,7 +41,7 @@ interface DashboardProps {
   onTokenRefresh?: (newToken: string) => void;
 }
 
-type TabType = 'messages' | 'projects' | 'skills' | 'experiences' | 'security';
+type TabType = 'messages' | 'projects' | 'skills' | 'experiences' | 'certificates' | 'security' | 'analytics';
 
 const Dashboard = ({ token, onLogout, onTokenRefresh }: DashboardProps) => {
   const { refetchAll } = usePortfolio();
@@ -43,6 +52,9 @@ const Dashboard = ({ token, onLogout, onTokenRefresh }: DashboardProps) => {
   const [projects, setProjects] = useState<Project[]>([]);
   const [skills, setSkills] = useState<Skill[]>([]);
   const [experiences, setExperiences] = useState<Experience[]>([]);
+  const [certificates, setCertificates] = useState<Certificate[]>([]);
+  const [analyticsData, setAnalyticsData] = useState<AnalyticsSummary | null>(null);
+  const [isAnalyticsLoading, setIsAnalyticsLoading] = useState(false);
 
 
   const [loading, setLoading] = useState(false);
@@ -67,7 +79,7 @@ const Dashboard = ({ token, onLogout, onTokenRefresh }: DashboardProps) => {
     tech: '',
     github: '',
     link: '',
-    testCasesLink: '',
+    featured: false,
   });
 
 
@@ -75,7 +87,7 @@ const Dashboard = ({ token, onLogout, onTokenRefresh }: DashboardProps) => {
   const [editingSkill, setEditingSkill] = useState<Skill | null>(null);
   const [skillForm, setSkillForm] = useState<{
     name: string;
-    category: 'frontend' | 'backend' | 'database' | 'other';
+    category: 'frontend' | 'backend' | 'database' | 'other' | 'testing';
   }>({
     name: '',
     category: 'frontend',
@@ -89,6 +101,12 @@ const Dashboard = ({ token, onLogout, onTokenRefresh }: DashboardProps) => {
     company: '',
     duration: '',
     description: '',
+  });
+  const [isCertModalOpen, setIsCertModalOpen] = useState(false);
+  const [editingCert, setEditingCert] = useState<Certificate | null>(null);
+  const [certForm, setCertForm] = useState({
+    title: '',
+    image: '',
   });
 
   const showNotification = (type: 'success' | 'error', text: string) => {
@@ -112,14 +130,52 @@ const Dashboard = ({ token, onLogout, onTokenRefresh }: DashboardProps) => {
   };
 
 
+  const fetchAnalytics = useCallback(async () => {
+    setIsAnalyticsLoading(true);
+    try {
+      const res = await fetch('/api/analytics', { headers: getAuthHeaders() });
+      if (res.ok) {
+        const data = await res.json();
+        setAnalyticsData(data);
+      }
+    } catch (err) {
+      console.error('Error fetching analytics:', err);
+    } finally {
+      setIsAnalyticsLoading(false);
+    }
+  }, [getAuthHeaders]);
+
+  const handleClearAnalytics = async () => {
+    if (!window.confirm('Are you sure you want to reset all visitor analytics data? This will clear all recorded page views.')) {
+      return;
+    }
+    try {
+      const res = await fetch('/api/analytics', {
+        method: 'DELETE',
+        headers: getAuthHeaders(),
+      });
+      if (res.ok) {
+        showNotification('success', 'Visitor analytics data cleared successfully.');
+        fetchAnalytics();
+      } else {
+        const err = await res.json();
+        showNotification('error', err.error || 'Failed to clear analytics.');
+      }
+    } catch {
+      showNotification('error', 'Network error clearing analytics.');
+    }
+  };
+
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const [msgRes, projRes, skillRes, expRes] = await Promise.all([
+      const [msgRes, projRes, skillRes, expRes, certRes, analyticsRes] = await Promise.all([
         fetch('/api/messages', { headers: getAuthHeaders() }),
         fetch('/api/projects'),
         fetch('/api/skills'),
         fetch('/api/experiences'),
+        fetch('/api/certificates'),
+        fetch('/api/analytics', { headers: getAuthHeaders() }),
       ]);
 
       if (msgRes.status === 401 || msgRes.status === 403) {
@@ -127,17 +183,24 @@ const Dashboard = ({ token, onLogout, onTokenRefresh }: DashboardProps) => {
         return;
       }
 
-      const [msgData, projData, skillData, expData] = await Promise.all([
+      const [msgData, projData, skillData, expData, certData] = await Promise.all([
         msgRes.json(),
         projRes.json(),
         skillRes.json(),
         expRes.json(),
+        certRes.json(),
       ]);
+
+      if (analyticsRes.ok) {
+        const aData = await analyticsRes.json();
+        setAnalyticsData(aData);
+      }
 
       setMessages(parseList(msgData));
       setProjects(parseList(projData));
       setSkills(parseList(skillData));
       setExperiences(parseList(expData));
+      setCertificates(parseList(certData));
     } catch (err) {
       console.error('Error fetching dashboard data:', err);
       showNotification('error', 'Failed to load dashboard data.');
@@ -202,7 +265,7 @@ const Dashboard = ({ token, onLogout, onTokenRefresh }: DashboardProps) => {
         tech: Array.isArray(proj.tech) ? proj.tech.join(', ') : '',
         github: proj.github || '',
         link: proj.link || '',
-        testCasesLink: proj.testCasesLink || '',
+        featured: proj.featured ?? false,
       });
     } else {
       setEditingProject(null);
@@ -214,7 +277,7 @@ const Dashboard = ({ token, onLogout, onTokenRefresh }: DashboardProps) => {
         tech: 'React, Node.js, Express, MongoDB',
         github: '',
         link: '',
-        testCasesLink: '',
+        featured: false,
       });
     }
     setIsProjectModalOpen(true);
@@ -235,7 +298,7 @@ const Dashboard = ({ token, onLogout, onTokenRefresh }: DashboardProps) => {
       tech: techArray,
       github: projectForm.github,
       link: projectForm.link,
-      testCasesLink: projectForm.testCasesLink,
+      featured: projectForm.featured,
     };
 
     try {
@@ -293,7 +356,28 @@ const Dashboard = ({ token, onLogout, onTokenRefresh }: DashboardProps) => {
       showNotification('error', 'Failed to delete project.');
     }
   };
-
+  const handleToggleFeatured = async (proj: Project) => {
+    const projId = proj.id || proj._id;
+    if (!projId) return;
+    const newFeatured = !proj.featured;
+    try {
+      const response = await fetch(`/api/projects/${projId}`, {
+        method: 'PUT',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ featured: newFeatured }),
+      });
+      if (response.ok) {
+        setProjects((prev) =>
+          prev.map((p) => ((p.id || p._id) === projId ? { ...p, featured: newFeatured } : p))
+        );
+        refetchAll();
+        showNotification('success', `Project ${newFeatured ? 'marked as featured' : 'removed from featured'}.`);
+      }
+    } catch (err) {
+      console.error(err);
+      showNotification('error', 'Failed to update featured status.');
+    }
+  };
   const openSkillModal = (sk?: Skill) => {
     if (sk) {
       setEditingSkill(sk);
@@ -333,6 +417,7 @@ const Dashboard = ({ token, onLogout, onTokenRefresh }: DashboardProps) => {
       if (response.ok) {
         showNotification('success', `Skill ${editingSkill ? 'updated' : 'added'} successfully.`);
         setIsSkillModalOpen(false);
+        try { localStorage.removeItem('portfolio_data_cache'); } catch (_) { }
         fetchData();
       } else {
         const result = await response.json();
@@ -353,6 +438,7 @@ const Dashboard = ({ token, onLogout, onTokenRefresh }: DashboardProps) => {
       });
       if (response.ok) {
         setSkills((prev) => prev.filter((s) => (s.id || s._id) !== skillId));
+        try { localStorage.removeItem('portfolio_data_cache'); } catch (_) { }
         showNotification('success', 'Skill deleted successfully.');
       } else {
         const result = await response.json();
@@ -438,6 +524,79 @@ const Dashboard = ({ token, onLogout, onTokenRefresh }: DashboardProps) => {
     } catch (err) {
       console.error(err);
       showNotification('error', 'Failed to delete experience.');
+    }
+  };
+  const openCertModal = (cert?: Certificate) => {
+    if (cert) {
+      setEditingCert(cert);
+      setCertForm({ title: cert.title, image: cert.image });
+    } else {
+      setEditingCert(null);
+      setCertForm({ title: '', image: '' });
+    }
+    setIsCertModalOpen(true);
+  };
+
+  const handleSaveCert = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const payload = {
+      title: certForm.title.trim(),
+      image: certForm.image.trim(),
+    };
+
+    try {
+      let response;
+      if (editingCert) {
+        const id = editingCert.id || editingCert._id;
+        response = await fetch(`/api/certificates/${id}`, {
+          method: 'PUT',
+          headers: getAuthHeaders(),
+          body: JSON.stringify(payload),
+        });
+      } else {
+        response = await fetch('/api/certificates', {
+          method: 'POST',
+          headers: getAuthHeaders(),
+          body: JSON.stringify(payload),
+        });
+      }
+
+      if (response.ok) {
+        showNotification(
+          'success',
+          `Certificate ${editingCert ? 'updated' : 'added'} successfully.`
+        );
+        setIsCertModalOpen(false);
+        fetchData();
+        refetchAll();
+      } else {
+        const result = await response.json();
+        showNotification('error', result.error || 'Failed to save certificate.');
+      }
+    } catch (err) {
+      console.error(err);
+      showNotification('error', 'Error saving certificate.');
+    }
+  };
+
+  const handleDeleteCert = async (certId: string) => {
+    if (!window.confirm('Are you sure you want to delete this certificate?')) return;
+    try {
+      const response = await fetch(`/api/certificates/${certId}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders(),
+      });
+      if (response.ok) {
+        setCertificates((prev) => prev.filter((c) => (c.id || c._id) !== certId));
+        refetchAll();
+        showNotification('success', 'Certificate deleted successfully.');
+      } else {
+        const result = await response.json();
+        showNotification('error', result.error || 'Failed to delete certificate.');
+      }
+    } catch (err) {
+      console.error(err);
+      showNotification('error', 'Failed to delete certificate.');
     }
   };
 
@@ -568,7 +727,7 @@ const Dashboard = ({ token, onLogout, onTokenRefresh }: DashboardProps) => {
             </button>
           </div>
         )}
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 mb-6">
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6 mb-6">
           <div
             onClick={() => setActiveTab('messages')}
             className={`cursor-pointer rounded-2xl border p-4 transition ${activeTab === 'messages'
@@ -631,6 +790,41 @@ const Dashboard = ({ token, onLogout, onTokenRefresh }: DashboardProps) => {
               <div className="text-xs text-zinc-500 font-medium">Experiences</div>
             </div>
           </div>
+
+          <div
+            onClick={() => setActiveTab('certificates')}
+            className={`cursor-pointer rounded-2xl border p-4 transition ${activeTab === 'certificates'
+              ? 'border-amber-500 bg-amber-50/50 dark:border-amber-500/50 dark:bg-amber-950/20'
+              : 'border-zinc-200 bg-white hover:border-zinc-300 dark:border-zinc-800 dark:bg-zinc-900/50'
+              }`}
+          >
+            <Award className="h-5 w-5 text-amber-500" />
+            <div className="mt-3">
+              <div className="text-2xl font-bold">{certificates.length}</div>
+              <div className="text-xs text-zinc-500 font-medium">Certificates</div>
+            </div>
+          </div>
+
+          <div
+            onClick={() => setActiveTab('analytics')}
+            className={`cursor-pointer rounded-2xl border p-4 transition ${activeTab === 'analytics'
+              ? 'border-sky-500 bg-sky-50/50 dark:border-sky-500/50 dark:bg-sky-950/20'
+              : 'border-zinc-200 bg-white hover:border-zinc-300 dark:border-zinc-800 dark:bg-zinc-900/50'
+              }`}
+          >
+            <div className="flex items-center justify-between">
+              <Activity className="h-5 w-5 text-sky-500" />
+              {analyticsData && analyticsData.viewsToday > 0 && (
+                <span className="rounded-full bg-sky-600 px-2 py-0.5 text-[10px] font-bold text-white">
+                  +{analyticsData.viewsToday} today
+                </span>
+              )}
+            </div>
+            <div className="mt-3">
+              <div className="text-2xl font-bold">{analyticsData?.totalViews ?? 0}</div>
+              <div className="text-xs text-zinc-500 font-medium">Site Views</div>
+            </div>
+          </div>
         </div>
         <div className="flex flex-wrap items-center gap-2 border-b border-zinc-200 pb-3 dark:border-zinc-800">
           <button
@@ -675,6 +869,28 @@ const Dashboard = ({ token, onLogout, onTokenRefresh }: DashboardProps) => {
           >
             <Briefcase className="h-4 w-4" />
             Experience ({experiences.length})
+          </button>
+
+          <button
+            onClick={() => setActiveTab('certificates')}
+            className={`flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-bold uppercase tracking-wider transition cursor-pointer ${activeTab === 'certificates'
+              ? 'bg-amber-600 text-white dark:bg-amber-500 dark:text-white'
+              : 'bg-white text-zinc-600 border border-zinc-200 hover:bg-zinc-100 dark:bg-zinc-900 dark:text-zinc-400 dark:border-zinc-800'
+              }`}
+          >
+            <Award className="h-4 w-4" />
+            Certificates ({certificates.length})
+          </button>
+
+          <button
+            onClick={() => setActiveTab('analytics')}
+            className={`flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-bold uppercase tracking-wider transition cursor-pointer ${activeTab === 'analytics'
+              ? 'bg-sky-600 text-white dark:bg-sky-500 dark:text-white'
+              : 'bg-white text-zinc-600 border border-zinc-200 hover:bg-zinc-100 dark:bg-zinc-900 dark:text-zinc-400 dark:border-zinc-800'
+              }`}
+          >
+            <Activity className="h-4 w-4" />
+            Analytics ({analyticsData?.totalViews ?? 0})
           </button>
 
           <button
@@ -820,10 +1036,28 @@ const Dashboard = ({ token, onLogout, onTokenRefresh }: DashboardProps) => {
                   >
                     <div>
                       <div className="flex items-center justify-between">
-                        <span className="rounded-md bg-zinc-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
-                          {proj.category}
-                        </span>
+                        <div className="flex items-center gap-2">
+                          <span className="rounded-md bg-zinc-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
+                            {proj.category}
+                          </span>
+                          {proj.featured && (
+                            <span className="inline-flex items-center gap-1 rounded-md bg-amber-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-amber-700 dark:bg-amber-950/50 dark:text-amber-400">
+                              <Star className="h-2.5 w-2.5 fill-amber-500 text-amber-500" />
+                              Featured
+                            </span>
+                          )}
+                        </div>
                         <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => handleToggleFeatured(proj)}
+                            className={`rounded-lg p-1.5 transition cursor-pointer ${proj.featured
+                                ? 'text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-950/30'
+                                : 'text-zinc-400 hover:bg-zinc-100 hover:text-amber-500 dark:hover:bg-zinc-800'
+                              }`}
+                            title={proj.featured ? 'Remove from featured' : 'Mark as featured'}
+                          >
+                            <Star className={`h-4 w-4 ${proj.featured ? 'fill-amber-500' : ''}`} />
+                          </button>
                           <button
                             onClick={() => openProjectModal(proj)}
                             className="rounded-lg p-1.5 text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900 dark:hover:bg-zinc-800 dark:hover:text-zinc-100 cursor-pointer"
@@ -891,17 +1125,6 @@ const Dashboard = ({ token, onLogout, onTokenRefresh }: DashboardProps) => {
                         >
                           <ExternalLink className="h-3.5 w-3.5" />
                           Live Demo
-                        </a>
-                      )}
-                      {proj.testCasesLink && (
-                        <a
-                          href={proj.testCasesLink}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="flex items-center gap-1 text-emerald-600 hover:underline dark:text-emerald-400"
-                        >
-                          <FileSpreadsheet className="h-3.5 w-3.5" />
-                          Test Cases
                         </a>
                       )}
                     </div>
@@ -1020,6 +1243,110 @@ const Dashboard = ({ token, onLogout, onTokenRefresh }: DashboardProps) => {
             </div>
           </div>
         )}
+        {activeTab === 'certificates' && (
+          <div className="mt-6 space-y-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-bold">Certificates</h2>
+                <p className="text-xs text-zinc-500">Add certificate image URL and title</p>
+              </div>
+              <button
+                onClick={() => openCertModal()}
+                className="flex items-center gap-1.5 rounded-xl bg-amber-600 px-4 py-2 text-xs font-semibold text-white hover:bg-amber-700 transition cursor-pointer"
+              >
+                <Plus className="h-4 w-4" />
+                Add Certificate
+              </button>
+            </div>
+
+            {certificates.length === 0 ? (
+              <div className="rounded-2xl border border-dashed border-zinc-300 py-16 text-center dark:border-zinc-800">
+                <Award className="mx-auto h-8 w-8 text-zinc-400" />
+                <p className="mt-3 text-sm text-zinc-500">No certificates yet. Add your first one!</p>
+              </div>
+            ) : (
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {certificates.map((cert) => {
+                  const certId = cert.id || cert._id || '';
+                  return (
+                    <div
+                      key={certId}
+                      className="flex flex-col justify-between rounded-2xl border border-zinc-200 bg-white overflow-hidden shadow-xs dark:border-zinc-800 dark:bg-zinc-900/50"
+                    >
+                      <a
+                        href={cert.image}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="group/img relative block h-40 w-full bg-zinc-100 dark:bg-zinc-800 overflow-hidden cursor-pointer"
+                        title="Click to view full image in new tab"
+                      >
+                        <img
+                          src={cert.image}
+                          alt={cert.title}
+                          className="h-full w-full object-cover transition-transform duration-300 group-hover/img:scale-105"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).style.display = 'none';
+                          }}
+                        />
+                        <span className="absolute top-2 left-2 inline-flex items-center gap-1 rounded-full bg-amber-500/90 backdrop-blur-sm px-2 py-0.5 text-[10px] font-bold text-white z-10">
+                          <Award className="h-2.5 w-2.5" />
+                          Certificate
+                        </span>
+                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center">
+                          <span className="inline-flex items-center gap-1 rounded-full bg-white/90 dark:bg-zinc-900/90 text-zinc-900 dark:text-zinc-100 px-2.5 py-1 text-[11px] font-semibold shadow-sm">
+                            <ExternalLink className="h-3 w-3" />
+                            View Full
+                          </span>
+                        </div>
+                      </a>
+
+                      <div className="p-4">
+                        <h3 className="font-bold text-sm text-zinc-900 dark:text-zinc-100 leading-snug">
+                          {cert.title}
+                        </h3>
+                        {cert.createdAt && (
+                          <p className="mt-1 text-[11px] text-zinc-400">
+                            {new Date(cert.createdAt).toLocaleDateString('en-US', {
+                              month: 'short', year: 'numeric'
+                            })}
+                          </p>
+                        )}
+                      </div>
+
+                      <div className="flex items-center justify-between border-t border-zinc-100 dark:border-zinc-800 px-4 py-3">
+                        <a
+                          href={cert.image}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="flex items-center gap-1 text-xs text-zinc-500 hover:text-zinc-900 dark:hover:text-white"
+                        >
+                          <ExternalLink className="h-3.5 w-3.5" />
+                          View Image
+                        </a>
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => openCertModal(cert)}
+                            className="rounded-lg p-1.5 text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900 dark:hover:bg-zinc-800 dark:hover:text-zinc-100 cursor-pointer"
+                            title="Edit Certificate"
+                          >
+                            <Edit className="h-4 w-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteCert(certId)}
+                            className="rounded-lg p-1.5 text-red-500 hover:bg-red-50 hover:text-red-700 dark:hover:bg-red-950/30 cursor-pointer"
+                            title="Delete Certificate"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
         {activeTab === 'security' && (
           <div className="mt-6 max-w-xl">
             <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-xs dark:border-zinc-800 dark:bg-zinc-900/50">
@@ -1090,6 +1417,388 @@ const Dashboard = ({ token, onLogout, onTokenRefresh }: DashboardProps) => {
                   Save New Password
                 </button>
               </form>
+            </div>
+          </div>
+        )}
+        {activeTab === 'analytics' && (
+          <div className="mt-6 space-y-6">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-lg font-bold">Visitor Analytics & Traffic</h2>
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-0.5 text-[11px] font-bold text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                    <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    Live Tracking
+                  </span>
+                </div>
+                <p className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">
+                  Insights on visitor devices, geographic locations, and total views across your portfolio.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={fetchAnalytics}
+                  disabled={isAnalyticsLoading}
+                  className="flex items-center gap-1.5 rounded-xl border border-zinc-200 bg-white px-3.5 py-2 text-xs font-semibold text-zinc-700 hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800 transition cursor-pointer"
+                  title="Refresh visitor analytics"
+                >
+                  <RefreshCw className={`h-3.5 w-3.5 ${isAnalyticsLoading ? 'animate-spin' : ''}`} />
+                  Refresh
+                </button>
+                <button
+                  onClick={handleClearAnalytics}
+                  className="flex items-center gap-1.5 rounded-xl border border-red-200 bg-red-50 px-3.5 py-2 text-xs font-semibold text-red-700 hover:bg-red-100 dark:border-red-900/60 dark:bg-red-950/40 dark:text-red-400 dark:hover:bg-red-950/80 transition cursor-pointer"
+                  title="Clear all recorded analytics data"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                  Reset Analytics
+                </button>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+              <div className="rounded-2xl border border-sky-100 bg-sky-50/40 p-5 dark:border-sky-900/40 dark:bg-sky-950/20">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold uppercase tracking-wider text-sky-700 dark:text-sky-400">
+                    Unique IP Visitors
+                  </span>
+                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-sky-500/10 text-sky-600 dark:bg-sky-400/10 dark:text-sky-400">
+                    <Eye className="h-5 w-5" />
+                  </div>
+                </div>
+                <div className="mt-3">
+                  <div className="text-3xl font-extrabold text-zinc-900 dark:text-zinc-100">
+                    {analyticsData?.totalViews ?? 0}
+                  </div>
+                  <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+                    Based on IP address (same IP views don&apos;t increase)
+                  </p>
+                </div>
+              </div>
+              <div className="rounded-2xl border border-emerald-100 bg-emerald-50/40 p-5 dark:border-emerald-900/40 dark:bg-emerald-950/20">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
+                    Unique Visitors
+                  </span>
+                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 dark:bg-emerald-400/10 dark:text-emerald-400">
+                    <Users className="h-5 w-5" />
+                  </div>
+                </div>
+                <div className="mt-3">
+                  <div className="text-3xl font-extrabold text-zinc-900 dark:text-zinc-100">
+                    {analyticsData?.uniqueVisitors ?? 0}
+                  </div>
+                  <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+                    Distinct IP visitor sessions
+                  </p>
+                </div>
+              </div>
+              <div className="rounded-2xl border border-violet-100 bg-violet-50/40 p-5 dark:border-violet-900/40 dark:bg-violet-950/20">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold uppercase tracking-wider text-violet-700 dark:text-violet-400">
+                    Active Today
+                  </span>
+                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-violet-500/10 text-violet-600 dark:bg-violet-400/10 dark:text-violet-400">
+                    <Activity className="h-5 w-5" />
+                  </div>
+                </div>
+                <div className="mt-3">
+                  <div className="text-3xl font-extrabold text-zinc-900 dark:text-zinc-100">
+                    {analyticsData?.viewsToday ?? 0}
+                  </div>
+                  <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+                    Active IPs in the last 24 hours
+                  </p>
+                </div>
+              </div>
+              <div className="rounded-2xl border border-amber-100 bg-amber-50/40 p-5 dark:border-amber-900/40 dark:bg-amber-950/20">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400">
+                    Primary Device
+                  </span>
+                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-500/10 text-amber-600 dark:bg-amber-400/10 dark:text-amber-400">
+                    <Smartphone className="h-5 w-5" />
+                  </div>
+                </div>
+                <div className="mt-3">
+                  <div className="text-3xl font-extrabold text-zinc-900 dark:text-zinc-100">
+                    {analyticsData?.devices && analyticsData.devices.length > 0
+                      ? analyticsData.devices[0].name
+                      : 'N/A'}
+                  </div>
+                  <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+                    {analyticsData?.devices && analyticsData.devices.length > 0
+                      ? `${analyticsData.devices[0].percentage}% of visitor traffic`
+                      : 'Awaiting visitor data'}
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+              <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-xs dark:border-zinc-800 dark:bg-zinc-900/50">
+                <div className="flex items-center justify-between border-b border-zinc-100 pb-4 dark:border-zinc-800">
+                  <div className="flex items-center gap-2.5">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-sky-50 text-sky-600 dark:bg-sky-950/50 dark:text-sky-400">
+                      <Smartphone className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <h3 className="text-base font-bold text-zinc-900 dark:text-zinc-100">
+                        Devices Distribution
+                      </h3>
+                      <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                        Types of devices used to access your portfolio
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <div className="mt-5 space-y-4">
+                  {['Mobile', 'Desktop', 'Tablet'].map((devName) => {
+                    const devItem = analyticsData?.devices?.find(
+                      (d) => d.name.toLowerCase() === devName.toLowerCase()
+                    );
+                    const count = devItem ? devItem.count : 0;
+                    const pct = devItem ? devItem.percentage : 0;
+
+                    const IconComponent =
+                      devName === 'Mobile'
+                        ? Smartphone
+                        : devName === 'Desktop'
+                          ? Monitor
+                          : TabletIcon;
+
+                    const colorClass =
+                      devName === 'Mobile'
+                        ? 'bg-sky-500'
+                        : devName === 'Desktop'
+                          ? 'bg-emerald-500'
+                          : 'bg-purple-500';
+
+                    return (
+                      <div key={devName} className="space-y-1.5">
+                        <div className="flex items-center justify-between text-xs">
+                          <span className="flex items-center gap-2 font-semibold text-zinc-800 dark:text-zinc-200">
+                            <IconComponent className="h-4 w-4 text-zinc-500" />
+                            {devName}
+                          </span>
+                          <span className="font-bold text-zinc-600 dark:text-zinc-300">
+                            {count} views ({pct}%)
+                          </span>
+                        </div>
+                        <div className="h-2.5 w-full overflow-hidden rounded-full bg-zinc-100 dark:bg-zinc-800">
+                          <div
+                            className={`h-full rounded-full transition-all duration-500 ${colorClass}`}
+                            style={{ width: `${pct}%` }}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+                <div className="mt-6 border-t border-zinc-100 pt-5 dark:border-zinc-800">
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+                    Operating Systems & Browsers
+                  </h4>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {analyticsData?.os?.map((osItem) => (
+                      <span
+                        key={osItem.name}
+                        className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-200 bg-zinc-50 px-2.5 py-1 text-xs font-medium text-zinc-700 dark:border-zinc-800 dark:bg-zinc-800/60 dark:text-zinc-300"
+                      >
+                        <Laptop className="h-3 w-3 text-zinc-400" />
+                        {osItem.name}: <strong className="font-bold">{osItem.count}</strong>
+                      </span>
+                    ))}
+                    {analyticsData?.browsers?.map((bItem) => (
+                      <span
+                        key={bItem.name}
+                        className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-200 bg-zinc-50 px-2.5 py-1 text-xs font-medium text-zinc-700 dark:border-zinc-800 dark:bg-zinc-800/60 dark:text-zinc-300"
+                      >
+                        <Globe className="h-3 w-3 text-zinc-400" />
+                        {bItem.name}: <strong className="font-bold">{bItem.count}</strong>
+                      </span>
+                    ))}
+                    {(!analyticsData?.os || analyticsData.os.length === 0) && (
+                      <p className="text-xs text-zinc-400 italic">No OS data recorded yet</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+              <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-xs dark:border-zinc-800 dark:bg-zinc-900/50">
+                <div className="flex items-center justify-between border-b border-zinc-100 pb-4 dark:border-zinc-800">
+                  <div className="flex items-center gap-2.5">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-400">
+                      <MapPin className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <h3 className="text-base font-bold text-zinc-900 dark:text-zinc-100">
+                        Visitor Locations
+                      </h3>
+                      <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                        Geographic origin of site visitors (Cities & Countries)
+                      </p>
+                    </div>
+                  </div>
+                  <span className="rounded-full bg-zinc-100 px-2.5 py-1 text-[11px] font-semibold text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
+                    {analyticsData?.locations?.length ?? 0} Locations
+                  </span>
+                </div>
+
+                <div className="mt-5 space-y-3.5">
+                  {analyticsData?.locations && analyticsData.locations.length > 0 ? (
+                    analyticsData.locations.map((loc, idx) => (
+                      <div
+                        key={`${loc.country}-${loc.city}-${idx}`}
+                        className="rounded-xl border border-zinc-100 bg-zinc-50/60 p-3 transition dark:border-zinc-800/60 dark:bg-zinc-800/30"
+                      >
+                        <div className="flex items-center justify-between text-xs">
+                          <div className="flex items-center gap-2">
+                            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-zinc-200 text-[10px] font-bold text-zinc-700 dark:bg-zinc-700 dark:text-zinc-200">
+                              {idx + 1}
+                            </span>
+                            <span className="font-bold text-zinc-900 dark:text-zinc-100">
+                              {loc.city !== 'Unknown' ? `${loc.city}, ` : ''}
+                              {loc.country}
+                            </span>
+                            {loc.countryCode && (
+                              <span className="rounded bg-zinc-200/80 px-1.5 py-0.5 text-[9px] font-mono font-bold text-zinc-700 dark:bg-zinc-700 dark:text-zinc-300 uppercase">
+                                {loc.countryCode}
+                              </span>
+                            )}
+                          </div>
+                          <span className="font-bold text-zinc-700 dark:text-zinc-300">
+                            {loc.count} {loc.count === 1 ? 'view' : 'views'} ({loc.percentage}%)
+                          </span>
+                        </div>
+                        <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-700">
+                          <div
+                            className="h-full rounded-full bg-emerald-500 transition-all duration-500"
+                            style={{ width: `${Math.max(loc.percentage, 4)}%` }}
+                          />
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="py-12 text-center">
+                      <Globe className="mx-auto h-8 w-8 text-zinc-400 opacity-60" />
+                      <p className="mt-2 text-xs font-medium text-zinc-500 dark:text-zinc-400">
+                        No geographic data recorded yet.
+                      </p>
+                      <p className="mt-1 text-[11px] text-zinc-400">
+                        Visits from visitors will automatically log their country and city here.
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+            <div className="rounded-2xl border border-zinc-200 bg-white shadow-xs dark:border-zinc-800 dark:bg-zinc-900/50">
+              <div className="flex items-center justify-between border-b border-zinc-100 p-6 pb-4 dark:border-zinc-800">
+                <div className="flex items-center gap-2.5">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-violet-50 text-violet-600 dark:bg-violet-950/50 dark:text-violet-400">
+                    <Activity className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-bold text-zinc-900 dark:text-zinc-100">
+                      Recent Visitor Sessions
+                    </h3>
+                    <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                      Live audit of the latest 25 page visits with device & location details
+                    </p>
+                  </div>
+                </div>
+                <span className="text-xs font-semibold text-zinc-500">
+                  {analyticsData?.recentVisits?.length ?? 0} Visits Logged
+                </span>
+              </div>
+
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead className="border-b border-zinc-100 bg-zinc-50 text-[11px] font-bold uppercase tracking-wider text-zinc-500 dark:border-zinc-800 dark:bg-zinc-800/40 dark:text-zinc-400">
+                    <tr>
+                      <th className="px-6 py-3">IP Address</th>
+                      <th className="px-6 py-3">Device</th>
+                      <th className="px-6 py-3">Location</th>
+                      <th className="px-6 py-3">Browser / OS</th>
+                      <th className="px-6 py-3">Page Visited</th>
+                      <th className="px-6 py-3">Resolution</th>
+                      <th className="px-6 py-3 text-right">Latest Visit (Time & Date)</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
+                    {analyticsData?.recentVisits && analyticsData.recentVisits.length > 0 ? (
+                      analyticsData.recentVisits.map((visit, index) => {
+                        const DeviceIcon =
+                          visit.device === 'Mobile'
+                            ? Smartphone
+                            : visit.device === 'Desktop'
+                              ? Monitor
+                              : TabletIcon;
+
+                        return (
+                          <tr
+                            key={visit.id || visit._id || index}
+                            className="hover:bg-zinc-50/60 dark:hover:bg-zinc-800/30 transition-colors"
+                          >
+                            <td className="px-6 py-3.5 whitespace-nowrap">
+                              <span className="font-mono font-semibold text-zinc-700 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded text-[11px]">
+                                {visit.ip || '127.0.0.1'}
+                              </span>
+                            </td>
+                            <td className="px-6 py-3.5 whitespace-nowrap">
+                              <span className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-200 bg-white px-2.5 py-1 text-xs font-semibold text-zinc-800 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200">
+                                <DeviceIcon className="h-3.5 w-3.5 text-zinc-500" />
+                                {visit.device}
+                                {visit.visitCount && visit.visitCount > 1 ? (
+                                  <span className="ml-1 rounded bg-zinc-100 px-1 py-0.5 text-[10px] font-normal text-zinc-500 dark:bg-zinc-700 dark:text-zinc-300" title={`This IP visited ${visit.visitCount} times without increasing overall count`}>
+                                    {visit.visitCount}x
+                                  </span>
+                                ) : null}
+                              </span>
+                            </td>
+                            <td className="px-6 py-3.5 whitespace-nowrap">
+                              <div className="flex items-center gap-1.5 font-medium text-zinc-900 dark:text-zinc-100">
+                                <MapPin className="h-3.5 w-3.5 text-red-500 shrink-0" />
+                                <span>
+                                  {visit.city !== 'Unknown' ? `${visit.city}, ` : ''}
+                                  {visit.country}
+                                </span>
+                              </div>
+                            </td>
+                            <td className="px-6 py-3.5 whitespace-nowrap text-zinc-600 dark:text-zinc-300">
+                              <span>
+                                {visit.browser} on {visit.os}
+                              </span>
+                            </td>
+                            <td className="px-6 py-3.5 whitespace-nowrap font-mono text-[11px] text-zinc-600 dark:text-zinc-400">
+                              {visit.path || '/'}
+                            </td>
+                            <td className="px-6 py-3.5 whitespace-nowrap text-zinc-500 font-mono text-[11px]">
+                              {visit.screenResolution || 'Auto'}
+                            </td>
+                            <td className="px-6 py-3.5 whitespace-nowrap text-right text-zinc-500">
+                              {visit.lastVisitedAt || visit.createdAt
+                                ? new Date(visit.lastVisitedAt || visit.createdAt).toLocaleString(undefined, {
+                                  month: 'short',
+                                  day: 'numeric',
+                                  hour: '2-digit',
+                                  minute: '2-digit',
+                                  second: '2-digit',
+                                })
+                                : 'Just now'}
+                            </td>
+                          </tr>
+                        );
+                      })
+                    ) : (
+                      <tr>
+                        <td colSpan={7} className="py-12 text-center text-zinc-400 italic">
+                          No visits logged yet. Visit your portfolio homepage to see live activity here!
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         )}
@@ -1206,20 +1915,25 @@ const Dashboard = ({ token, onLogout, onTokenRefresh }: DashboardProps) => {
                   className="w-full rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm outline-none focus:border-zinc-900 dark:border-zinc-800 dark:bg-zinc-950"
                 />
               </div>
-
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-zinc-500 uppercase">
-                  Test Cases Spreadsheet URL (Optional)
-                </label>
-                <input
-                  type="url"
-                  value={projectForm.testCasesLink}
-                  onChange={(e) =>
-                    setProjectForm({ ...projectForm, testCasesLink: e.target.value })
-                  }
-                  placeholder="https://docs.google.com/spreadsheets/..."
-                  className="w-full rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm outline-none focus:border-zinc-900 dark:border-zinc-800 dark:bg-zinc-950"
-                />
+              <div className="flex items-center justify-between rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3 dark:border-zinc-800 dark:bg-zinc-900/50">
+                <div>
+                  <div className="flex items-center gap-2 text-sm font-bold text-zinc-800 dark:text-zinc-200">
+                    <Star className={`h-4 w-4 ${projectForm.featured ? 'fill-amber-500 text-amber-500' : 'text-zinc-400'}`} />
+                    Mark as Featured
+                  </div>
+                  <p className="mt-0.5 text-[11px] text-zinc-500">Featured projects appear on the homepage</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setProjectForm({ ...projectForm, featured: !projectForm.featured })}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors cursor-pointer ${projectForm.featured ? 'bg-amber-500' : 'bg-zinc-300 dark:bg-zinc-700'
+                    }`}
+                >
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${projectForm.featured ? 'translate-x-6' : 'translate-x-1'
+                      }`}
+                  />
+                </button>
               </div>
 
               <div className="mt-5 flex justify-end gap-2 pt-2">
@@ -1274,7 +1988,7 @@ const Dashboard = ({ token, onLogout, onTokenRefresh }: DashboardProps) => {
                   onChange={(e) =>
                     setSkillForm({
                       ...skillForm,
-                      category: e.target.value as 'frontend' | 'backend' | 'database' | 'other',
+                      category: e.target.value as 'frontend' | 'backend' | 'database' | 'other' | 'testing',
                     })
                   }
                   className="w-full rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm outline-none focus:border-zinc-900 dark:border-zinc-800 dark:bg-zinc-950"
@@ -1282,7 +1996,8 @@ const Dashboard = ({ token, onLogout, onTokenRefresh }: DashboardProps) => {
                   <option value="frontend">Frontend Development</option>
                   <option value="backend">Backend Development</option>
                   <option value="database">Database Systems</option>
-                  <option value="other">Other Tools & DevOps</option>
+                  <option value="testing">Testing &amp; Automation</option>
+                  <option value="other">Other Tools &amp; DevOps</option>
                 </select>
               </div>
 
@@ -1382,6 +2097,82 @@ const Dashboard = ({ token, onLogout, onTokenRefresh }: DashboardProps) => {
                   className="rounded-lg bg-zinc-900 px-4 py-2 text-xs font-semibold text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-950 dark:hover:bg-zinc-200 cursor-pointer"
                 >
                   Save Experience
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+      {isCertModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
+          <div className="w-full max-w-md rounded-2xl border border-zinc-200 bg-white p-6 shadow-xl dark:border-zinc-800 dark:bg-zinc-900">
+            <div className="flex items-center justify-between border-b border-zinc-100 pb-3 dark:border-zinc-800">
+              <h3 className="text-base font-bold">
+                {editingCert ? 'Edit Certificate' : 'Add New Certificate'}
+              </h3>
+              <button
+                onClick={() => setIsCertModalOpen(false)}
+                className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 cursor-pointer"
+              >
+                <XCircle className="h-5 w-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveCert} className="mt-4 space-y-4">
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-zinc-500 uppercase">Certificate Title</label>
+                <input
+                  type="text"
+                  required
+                  value={certForm.title}
+                  onChange={(e) => setCertForm({ ...certForm, title: e.target.value })}
+                  placeholder="e.g. React - The Complete Guide (Udemy)"
+                  className="w-full rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm outline-none focus:border-zinc-900 dark:border-zinc-800 dark:bg-zinc-950"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-zinc-500 uppercase">
+                  Certificate Image URL (Cloudinary / Direct Link)
+                </label>
+                <input
+                  type="url"
+                  required
+                  value={certForm.image}
+                  onChange={(e) => setCertForm({ ...certForm, image: e.target.value })}
+                  placeholder="https://res.cloudinary.com/... or https://..."
+                  className="w-full rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm outline-none focus:border-zinc-900 dark:border-zinc-800 dark:bg-zinc-950"
+                />
+                {certForm.image && (
+                  <div className="mt-2 relative h-32 w-full overflow-hidden rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-900">
+                    <img
+                      src={certForm.image}
+                      alt="Certificate Preview"
+                      className="h-full w-full object-cover"
+                      onError={(e) => {
+                        (e.target as HTMLElement).style.display = 'none';
+                      }}
+                    />
+                    <p className="absolute bottom-2 left-2 text-[10px] text-white bg-black/50 px-2 py-0.5 rounded-full">
+                      Preview
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              <div className="mt-5 flex justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setIsCertModalOpen(false)}
+                  className="rounded-lg border border-zinc-200 px-4 py-2 text-xs font-semibold hover:bg-zinc-100 dark:border-zinc-800 dark:hover:bg-zinc-800 cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="rounded-lg bg-amber-600 px-4 py-2 text-xs font-semibold text-white hover:bg-amber-700 cursor-pointer"
+                >
+                  Save Certificate
                 </button>
               </div>
             </form>

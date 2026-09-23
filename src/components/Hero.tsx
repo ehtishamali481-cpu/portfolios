@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { ArrowDown, Mail, Briefcase, ChevronRight, Code2, Database, Terminal } from 'lucide-react';
+import { ArrowDown, Mail, Briefcase, ChevronRight, Code2, Database, Terminal, FolderGit2, Award, Layers, Star } from 'lucide-react';
+import { usePortfolio } from '@/context/PortfolioContext';
 const avatarImg = '/images/profile.jpeg';
 
 interface HeroProps {
@@ -11,6 +12,7 @@ interface HeroProps {
 }
 
 const Hero = ({ onContactClick, onProjectsClick }: HeroProps) => {
+  const { projects, certificates, skills, experiences } = usePortfolio();
   const items = [
     {
       text: "Hi, I'm Ehtisham.",
@@ -182,23 +184,73 @@ const Hero = ({ onContactClick, onProjectsClick }: HeroProps) => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.8, delay: 0.6 }}
-          className="mt-20 border-t border-zinc-200/60 pt-8 dark:border-zinc-800/40 text-center"
+          className="mt-20 border-t border-zinc-200/60 pt-10 dark:border-zinc-800/40"
         >
-          <p className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
-            Core Specialized Tech Stack
+          <p className="text-center text-xs font-semibold uppercase tracking-wider text-zinc-500 mb-8">
+            At a Glance
           </p>
-          <div className="mt-6 flex flex-wrap items-center justify-center gap-x-8 gap-y-4 text-sm font-medium text-zinc-400 dark:text-zinc-600">
-            <span className="hover:text-zinc-800 dark:hover:text-zinc-300 transition-colors cursor-default">MongoDB</span>
-            <span className="text-zinc-200 dark:text-zinc-800">•</span>
-            <span className="hover:text-zinc-800 dark:hover:text-zinc-300 transition-colors cursor-default">Express.js</span>
-            <span className="text-zinc-200 dark:text-zinc-800">•</span>
-            <span className="hover:text-zinc-800 dark:hover:text-zinc-300 transition-colors cursor-default">React.js</span>
-            <span className="text-zinc-200 dark:text-zinc-800">•</span>
-            <span className="hover:text-zinc-800 dark:hover:text-zinc-300 transition-colors cursor-default">Node.js</span>
-            <span className="text-zinc-200 dark:text-zinc-800">•</span>
-            <span className="hover:text-zinc-800 dark:hover:text-zinc-300 transition-colors cursor-default">Next.js</span>
-            <span className="text-zinc-200 dark:text-zinc-800">•</span>
-            <span className="hover:text-zinc-800 dark:hover:text-zinc-300 transition-colors cursor-default">TypeScript</span>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            {[
+              {
+                icon: FolderGit2,
+                count: projects.length,
+                label: 'Projects',
+                suffix: projects.length > 0 ? '+' : '',
+                color: 'text-emerald-500',
+                bg: 'bg-emerald-50 dark:bg-emerald-950/30',
+                border: 'border-emerald-200/80 dark:border-emerald-900/40',
+                id: 'stat-projects',
+              },
+              {
+                icon: Award,
+                count: certificates.length,
+                label: 'Certificates',
+                suffix: '',
+                color: 'text-amber-500',
+                bg: 'bg-amber-50 dark:bg-amber-950/30',
+                border: 'border-amber-200/80 dark:border-amber-900/40',
+                id: 'stat-certificates',
+              },
+              {
+                icon: Layers,
+                count: skills.length,
+                label: 'Skills',
+                suffix: '+',
+                color: 'text-indigo-500',
+                bg: 'bg-indigo-50 dark:bg-indigo-950/30',
+                border: 'border-indigo-200/80 dark:border-indigo-900/40',
+                id: 'stat-skills',
+              },
+              {
+                icon: Star,
+                count: experiences.length,
+                label: 'Experience',
+                suffix: experiences.length > 0 ? '+' : '',
+                color: 'text-fuchsia-500',
+                bg: 'bg-fuchsia-50 dark:bg-fuchsia-950/30',
+                border: 'border-fuchsia-200/80 dark:border-fuchsia-900/40',
+                id: 'stat-experience',
+              },
+            ].map((stat, i) => (
+              <motion.div
+                key={stat.id}
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.7 + i * 0.1 }}
+                className={`flex flex-col items-center gap-2 rounded-2xl border ${stat.border} ${stat.bg} px-4 py-5 text-center transition-all hover:scale-[1.03] hover:shadow-sm cursor-default`}
+                id={stat.id}
+              >
+                <div className={`flex h-10 w-10 items-center justify-center rounded-xl bg-white/70 dark:bg-zinc-900/50 shadow-xs ${stat.color}`}>
+                  <stat.icon className="h-5 w-5" />
+                </div>
+                <div className={`text-2xl font-extrabold tracking-tight ${stat.color}`}>
+                  {stat.count}{stat.suffix}
+                </div>
+                <div className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+                  {stat.label}
+                </div>
+              </motion.div>
+            ))}
           </div>
         </motion.div>
 

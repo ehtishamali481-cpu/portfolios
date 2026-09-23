@@ -4,7 +4,6 @@ import { connectMongoDB } from '@/lib/mongodb';
 import { Experience } from '@/models/Experience';
 import { verifyAuthToken, sanitizeInput } from '@/lib/auth';
 
-// PUT /api/experiences/[id] - Protected
 export async function PUT(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -44,7 +43,7 @@ export async function PUT(
   }
 }
 
-// DELETE /api/experiences/[id] - Protected
+
 export async function DELETE(
   req: Request,
   { params }: { params: Promise<{ id: string }> }

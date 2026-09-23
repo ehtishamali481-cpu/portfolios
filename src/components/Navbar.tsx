@@ -30,6 +30,8 @@ const Navbar = ({
     { id: 'hero', label: 'Home' },
     { id: 'about', label: 'Skills' },
     { id: 'projects', label: 'Projects' },
+    { id: 'certificates', label: 'Certificates' },
+    { id: 'education', label: 'Education' },
     { id: 'experience', label: 'Experience' },
     { id: 'contact', label: 'Contact' },
   ];

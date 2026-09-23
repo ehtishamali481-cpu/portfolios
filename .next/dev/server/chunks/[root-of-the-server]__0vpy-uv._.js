@@ -103,7 +103,7 @@ async function POST(req) {
         }
         const rawBody = await req.json();
         const body = (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$auth$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["sanitizeInput"])(rawBody);
-        const { title, description, tech, link, github, testCasesLink, category, image } = body;
+        const { title, description, tech, link, github, testCasesLink, category, image, featured } = body;
         if (!title || !description) {
             return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
                 error: 'Title and description are required'
@@ -121,7 +121,8 @@ async function POST(req) {
             tech: techArray,
             link: link ? String(link).trim() : '',
             github: github ? String(github).trim() : '',
-            testCasesLink: testCasesLink ? String(testCasesLink).trim() : ''
+            testCasesLink: testCasesLink ? String(testCasesLink).trim() : '',
+            featured: featured === true || featured === 'true'
         });
         return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json(newProject, {
             status: 201
@@ -278,6 +279,10 @@ const ProjectSchema = new __TURBOPACK__imported__module__$5b$externals$5d2f$mong
         type: String,
         trim: true,
         default: ''
+    },
+    featured: {
+        type: Boolean,
+        default: false
     }
 }, {
     timestamps: true,

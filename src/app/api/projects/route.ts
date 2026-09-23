@@ -24,7 +24,7 @@ export async function POST(req: Request) {
 
     const rawBody = await req.json();
     const body = sanitizeInput(rawBody);
-    const { title, description, tech, link, github, testCasesLink, category, image } = body;
+    const { title, description, tech, link, github, testCasesLink, category, image, featured } = body;
 
     if (!title || !description) {
       return NextResponse.json({ error: 'Title and description are required' }, { status: 400 });
@@ -46,6 +46,7 @@ export async function POST(req: Request) {
       link: link ? String(link).trim() : '',
       github: github ? String(github).trim() : '',
       testCasesLink: testCasesLink ? String(testCasesLink).trim() : '',
+      featured: featured === true || featured === 'true',
     });
 
     return NextResponse.json(newProject, { status: 201 });

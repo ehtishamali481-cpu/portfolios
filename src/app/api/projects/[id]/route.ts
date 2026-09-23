@@ -4,7 +4,6 @@ import { connectMongoDB } from '@/lib/mongodb';
 import { Project } from '@/models/Project';
 import { verifyAuthToken, sanitizeInput } from '@/lib/auth';
 
-// PUT /api/projects/[id] - Protected
 export async function PUT(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -22,7 +21,7 @@ export async function PUT(
 
     const rawBody = await req.json();
     const body = sanitizeInput(rawBody);
-    const { title, description, tech, link, github, testCasesLink, category, image } = body;
+    const { title, description, tech, link, github, testCasesLink, category, image, featured } = body;
 
     await connectMongoDB();
     const project = await Project.findById(id);
@@ -38,12 +37,13 @@ export async function PUT(
     if (link !== undefined) project.link = String(link).trim();
     if (github !== undefined) project.github = String(github).trim();
     if (testCasesLink !== undefined) project.testCasesLink = String(testCasesLink).trim();
+    if (featured !== undefined) project.featured = featured === true || featured === 'true';
     if (tech !== undefined) {
       project.tech = Array.isArray(tech)
         ? tech.map((t: any) => String(t).trim()).filter(Boolean)
         : typeof tech === 'string'
-        ? tech.split(',').map((t) => t.trim()).filter(Boolean)
-        : [];
+          ? tech.split(',').map((t) => t.trim()).filter(Boolean)
+          : [];
     }
 
     await project.save();
@@ -54,7 +54,6 @@ export async function PUT(
   }
 }
 
-// DELETE /api/projects/[id] - Protected
 export async function DELETE(
   req: Request,
   { params }: { params: Promise<{ id: string }> }

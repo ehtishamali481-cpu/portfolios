@@ -5,10 +5,13 @@ import Navbar from '@/components/Navbar';
 import Hero from '@/components/Hero';
 import About from '@/components/About';
 import ProjectsSection from '@/components/ProjectsSection';
+import CertificatesSection from '@/components/CertificatesSection';
+import EducationSection from '@/components/EducationSection';
 import ExperienceSection from '@/components/ExperienceSection';
 import ContactForm from '@/components/ContactForm';
 import Login from '@/components/Login';
 import Dashboard from '@/components/Dashboard';
+import ScrollToTop from '@/components/ScrollToTop';
 import { Heart } from 'lucide-react';
 import { PortfolioProvider, usePortfolio } from '@/context/PortfolioContext';
 
@@ -90,7 +93,6 @@ function PortfolioContent() {
         />
 
         {showDashboard ? (
-          /* Secure Dashboard View */
           token ? (
             <Dashboard
               token={token}
@@ -101,7 +103,6 @@ function PortfolioContent() {
             <Login onLoginSuccess={handleLoginSuccess} />
           )
         ) : (
-          /* Public Portfolio View - Zero Blocking Instant Render */
           <div>
             <Hero
               onContactClick={() => scrollToSection('contact')}
@@ -109,13 +110,14 @@ function PortfolioContent() {
             />
             <About skills={skills} />
             <ProjectsSection projects={projects} />
+            <CertificatesSection />
+            <EducationSection />
             <ExperienceSection experiences={experiences} />
             <ContactForm />
+            <ScrollToTop />
           </div>
         )}
       </div>
-
-      {/* Footer Area */}
       <footer className="w-full border-t border-zinc-200 bg-white py-10 transition-colors duration-300 dark:border-zinc-900 dark:bg-zinc-950">
         <div className="mx-auto max-w-7xl px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-sm font-semibold text-zinc-500">

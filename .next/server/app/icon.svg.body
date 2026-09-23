@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <defs>
+    <linearGradient id="glow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6366f1" />
+      <stop offset="50%" stop-color="#a855f7" />
+      <stop offset="100%" stop-color="#06b6d4" />
+    </linearGradient>
+  </defs>
+
+  <!-- Dark Background Plate -->
+  <rect width="32" height="32" rx="8" fill="#09090b" />
+  <rect x="0.5" y="0.5" width="31" height="31" rx="7.5" fill="none" stroke="#27272a" stroke-width="1" />
+
+  <!-- Tech Monogram 'E' -->
+  <path 
+    d="M 23 9 H 11 C 9.89 9 9 9.89 9 11 V 21 C 9 22.11 9.89 23 11 23 H 23 M 9 16 H 20" 
+    fill="none" 
+    stroke="url(#glow)" 
+    stroke-width="2.8" 
+    stroke-linecap="round" 
+    stroke-linejoin="round"
+  />
+</svg>

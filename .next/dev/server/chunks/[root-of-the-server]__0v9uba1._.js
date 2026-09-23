@@ -98,7 +98,7 @@ async function PUT(req, { params }) {
         }
         const rawBody = await req.json();
         const body = (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$auth$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["sanitizeInput"])(rawBody);
-        const { title, description, tech, link, github, testCasesLink, category, image } = body;
+        const { title, description, tech, link, github, testCasesLink, category, image, featured } = body;
         await (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$mongodb$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["connectMongoDB"])();
         const project = await __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$models$2f$Project$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["Project"].findById(id);
         if (!project) {
@@ -115,6 +115,7 @@ async function PUT(req, { params }) {
         if (link !== undefined) project.link = String(link).trim();
         if (github !== undefined) project.github = String(github).trim();
         if (testCasesLink !== undefined) project.testCasesLink = String(testCasesLink).trim();
+        if (featured !== undefined) project.featured = featured === true || featured === 'true';
         if (tech !== undefined) {
             project.tech = Array.isArray(tech) ? tech.map((t)=>String(t).trim()).filter(Boolean) : typeof tech === 'string' ? tech.split(',').map((t)=>t.trim()).filter(Boolean) : [];
         }
@@ -313,6 +314,10 @@ const ProjectSchema = new __TURBOPACK__imported__module__$5b$externals$5d2f$mong
         type: String,
         trim: true,
         default: ''
+    },
+    featured: {
+        type: Boolean,
+        default: false
     }
 }, {
     timestamps: true,

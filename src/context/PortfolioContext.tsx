@@ -1,20 +1,23 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { Project, Experience, Skill } from '@/types';
-const defaultSkills: Skill[] = [
+import { Project, Experience, Skill, Certificate } from '@/types';
+export const defaultSkills: Skill[] = [
   { id: 'sk-1', name: 'HTML5', category: 'frontend', level: 90 },
   { id: 'sk-2', name: 'CSS3 / Tailwind CSS', category: 'frontend', level: 90 },
   { id: 'sk-3', name: 'JavaScript (ES6+)', category: 'frontend', level: 88 },
   { id: 'sk-4', name: 'TypeScript', category: 'frontend', level: 85 },
   { id: 'sk-5', name: 'React.js', category: 'frontend', level: 92 },
   { id: 'sk-6', name: 'Next.js', category: 'frontend', level: 88 },
-  { id: 'sk-7', name: 'Node.js', category: 'backend', level: 85 },
-  { id: 'sk-8', name: 'Express.js', category: 'backend', level: 88 },
-  { id: 'sk-9', name: 'REST APIs', category: 'backend', level: 90 },
-  { id: 'sk-10', name: 'MongoDB', category: 'database', level: 86 },
-  { id: 'sk-11', name: 'Mongoose', category: 'database', level: 88 },
-  { id: 'sk-12', name: 'Git & GitHub', category: 'other', level: 85 },
+  { id: 'sk-7', name: 'Node.js / Express.js', category: 'backend', level: 88 },
+  { id: 'sk-8', name: 'Python', category: 'backend', level: 82 },
+  { id: 'sk-9', name: 'FastAPI', category: 'backend', level: 85 },
+  { id: 'sk-10', name: 'REST APIs & GraphQL', category: 'backend', level: 90 },
+  { id: 'sk-11', name: 'MongoDB / Mongoose', category: 'database', level: 88 },
+  { id: 'sk-12', name: 'SQL / PostgreSQL', category: 'database', level: 85 },
+  { id: 'sk-13', name: 'Playwright', category: 'testing', level: 82 },
+  { id: 'sk-14', name: 'Selenium', category: 'testing', level: 80 },
+  { id: 'sk-15', name: 'Git & GitHub', category: 'other', level: 85 },
 ];
 
 const defaultProjects: Project[] = [
@@ -68,17 +71,22 @@ const defaultExperiences: Experience[] = [
   },
 ];
 
+const defaultCertificates: Certificate[] = [];
+
 interface PortfolioContextType {
   projects: Project[];
   experiences: Experience[];
   skills: Skill[];
+  certificates: Certificate[];
   projectsLoading: boolean;
   experiencesLoading: boolean;
   skillsLoading: boolean;
+  certificatesLoading: boolean;
   isInitialLoaded: boolean;
   refetchProjects: () => Promise<void>;
   refetchExperiences: () => Promise<void>;
   refetchSkills: () => Promise<void>;
+  refetchCertificates: () => Promise<void>;
   refetchAll: () => Promise<void>;
 }
 
@@ -86,13 +94,16 @@ const PortfolioContext = createContext<PortfolioContextType>({
   projects: defaultProjects,
   experiences: defaultExperiences,
   skills: defaultSkills,
+  certificates: defaultCertificates,
   projectsLoading: false,
   experiencesLoading: false,
   skillsLoading: false,
+  certificatesLoading: false,
   isInitialLoaded: true,
   refetchProjects: async () => { },
   refetchExperiences: async () => { },
   refetchSkills: async () => { },
+  refetchCertificates: async () => { },
   refetchAll: async () => { },
 });
 
@@ -102,11 +113,14 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const [projects, setProjects] = useState<Project[]>(defaultProjects);
   const [experiences, setExperiences] = useState<Experience[]>(defaultExperiences);
   const [skills, setSkills] = useState<Skill[]>(defaultSkills);
+  const [certificates, setCertificates] = useState<Certificate[]>(defaultCertificates);
 
   const [projectsLoading, setProjectsLoading] = useState(false);
   const [experiencesLoading, setExperiencesLoading] = useState(false);
   const [skillsLoading, setSkillsLoading] = useState(false);
+  const [certificatesLoading, setCertificatesLoading] = useState(false);
   const [isInitialLoaded, setIsInitialLoaded] = useState(false);
+
   const parseResponse = async (res: Response) => {
     if (!res.ok) return null;
     const json = await res.json();
@@ -167,19 +181,38 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     return null;
   }, []);
 
+  const fetchCertificates = useCallback(async () => {
+    setCertificatesLoading(true);
+    try {
+      const res = await fetch('/api/certificates');
+      const data = await parseResponse(res);
+      if (data !== null) {
+        setCertificates(data || []);
+        return data || [];
+      }
+    } catch (err) {
+      console.warn('Using cached/default certificates due to network delay');
+    } finally {
+      setCertificatesLoading(false);
+    }
+    return null;
+  }, []);
+
   const refetchAll = useCallback(async () => {
-    const [pData, eData, sData] = await Promise.all([
+    const [pData, eData, sData, cData] = await Promise.all([
       fetchProjects(),
       fetchExperiences(),
       fetchSkills(),
+      fetchCertificates(),
     ]);
 
-    if (pData || eData || sData) {
+    if (pData || eData || sData || cData) {
       try {
         const cacheObj = {
           projects: pData || defaultProjects,
           experiences: eData || defaultExperiences,
           skills: sData || defaultSkills,
+          certificates: cData || defaultCertificates,
           timestamp: Date.now(),
         };
         localStorage.setItem(CACHE_KEY, JSON.stringify(cacheObj));
@@ -187,7 +220,7 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         console.error('Error saving portfolio cache:', e);
       }
     }
-  }, [fetchProjects, fetchExperiences, fetchSkills]);
+  }, [fetchProjects, fetchExperiences, fetchSkills, fetchCertificates]);
 
   useEffect(() => {
     try {
@@ -197,6 +230,7 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         if (parsed.projects && parsed.projects.length > 0) setProjects(parsed.projects);
         if (parsed.experiences && parsed.experiences.length > 0) setExperiences(parsed.experiences);
         if (parsed.skills && parsed.skills.length > 0) setSkills(parsed.skills);
+        if (parsed.certificates) setCertificates(parsed.certificates);
       }
     } catch (err) {
       console.error('Error reading initial cache:', err);
@@ -213,13 +247,16 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         projects,
         experiences,
         skills,
+        certificates,
         projectsLoading,
         experiencesLoading,
         skillsLoading,
+        certificatesLoading,
         isInitialLoaded,
         refetchProjects: fetchProjects,
         refetchExperiences: fetchExperiences,
         refetchSkills: fetchSkills,
+        refetchCertificates: fetchCertificates,
         refetchAll,
       }}
     >

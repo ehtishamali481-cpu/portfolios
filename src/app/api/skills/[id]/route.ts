@@ -32,7 +32,7 @@ export async function PUT(
 
     if (name !== undefined) skill.name = String(name).trim();
     if (category !== undefined) {
-      const validCategories = ['frontend', 'backend', 'database', 'other'];
+      const validCategories = ['frontend', 'backend', 'database', 'other', 'testing'];
       if (validCategories.includes(category)) skill.category = category;
     }
     if (level !== undefined) {

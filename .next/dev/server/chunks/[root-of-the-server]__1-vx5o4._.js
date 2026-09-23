@@ -76,13 +76,97 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$auth$2e$ts__$5
 ;
 ;
 ;
+const SEED_SKILLS = [
+    {
+        name: 'HTML5',
+        category: 'frontend',
+        level: 90
+    },
+    {
+        name: 'CSS3 / Tailwind CSS',
+        category: 'frontend',
+        level: 90
+    },
+    {
+        name: 'JavaScript (ES6+)',
+        category: 'frontend',
+        level: 88
+    },
+    {
+        name: 'TypeScript',
+        category: 'frontend',
+        level: 85
+    },
+    {
+        name: 'React.js',
+        category: 'frontend',
+        level: 92
+    },
+    {
+        name: 'Next.js',
+        category: 'frontend',
+        level: 88
+    },
+    {
+        name: 'Node.js / Express.js',
+        category: 'backend',
+        level: 88
+    },
+    {
+        name: 'Python',
+        category: 'backend',
+        level: 82
+    },
+    {
+        name: 'FastAPI',
+        category: 'backend',
+        level: 85
+    },
+    {
+        name: 'REST APIs & GraphQL',
+        category: 'backend',
+        level: 90
+    },
+    {
+        name: 'MongoDB / Mongoose',
+        category: 'database',
+        level: 88
+    },
+    {
+        name: 'SQL / PostgreSQL',
+        category: 'database',
+        level: 85
+    },
+    {
+        name: 'Playwright',
+        category: 'testing',
+        level: 82
+    },
+    {
+        name: 'Selenium',
+        category: 'testing',
+        level: 80
+    },
+    {
+        name: 'Git & GitHub',
+        category: 'other',
+        level: 85
+    }
+];
 async function GET() {
     try {
         await (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$mongodb$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["connectMongoDB"])();
-        const skills = await __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$models$2f$Skill$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["Skill"].find().sort({
+        let skills = await __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$models$2f$Skill$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["Skill"].find().sort({
             category: 1,
             level: -1
         });
+        if (!skills || skills.length === 0) {
+            await __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$models$2f$Skill$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["Skill"].insertMany(SEED_SKILLS);
+            skills = await __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$models$2f$Skill$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["Skill"].find().sort({
+                category: 1,
+                level: -1
+            });
+        }
         return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json(skills);
     } catch (error) {
         return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
@@ -116,7 +200,8 @@ async function POST(req) {
             'frontend',
             'backend',
             'database',
-            'other'
+            'other',
+            'testing'
         ];
         const cleanCategory = validCategories.includes(category) ? category : 'other';
         await (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$mongodb$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["connectMongoDB"])();
@@ -250,7 +335,8 @@ const SkillSchema = new __TURBOPACK__imported__module__$5b$externals$5d2f$mongoo
             'frontend',
             'backend',
             'database',
-            'other'
+            'other',
+            'testing'
         ],
         required: true,
         default: 'frontend'

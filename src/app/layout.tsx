@@ -16,6 +16,8 @@ export const metadata: Metadata = {
   },
 };
 
+import AnalyticsTracker from '@/components/AnalyticsTracker';
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -23,7 +25,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className="antialiased font-sans">{children}</body>
+      <body className="antialiased font-sans">
+        <AnalyticsTracker />
+        {children}
+      </body>
     </html>
   );
 }

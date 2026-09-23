@@ -105,7 +105,7 @@ self.__SERVER_FILES_MANIFEST={
         "transform": "lodash/{{member}}"
       }
     },
-    "outputFileTracingRoot": "C:\\Users\\usar\\Downloads\\Portfolio\\Portfolio",
+    "outputFileTracingRoot": "C:\\Users\\usar\\Desktop\\GitHub Project File\\Portfolio\\Portfolio",
     "enablePrerenderSourceMaps": true,
     "cacheComponents": false,
     "cacheLife": {
@@ -325,13 +325,13 @@ self.__SERVER_FILES_MANIFEST={
       "bcryptjs",
       "jsonwebtoken"
     ],
-    "repoRoot": "C:\\Users\\usar\\Downloads\\Portfolio\\Portfolio",
+    "repoRoot": "C:\\Users\\usar\\Desktop\\GitHub Project File\\Portfolio\\Portfolio",
     "turbopack": {
-      "root": "C:\\Users\\usar\\Downloads\\Portfolio\\Portfolio"
+      "root": "C:\\Users\\usar\\Desktop\\GitHub Project File\\Portfolio\\Portfolio"
     },
     "distDirRoot": ".next"
   },
-  "appDir": "C:\\Users\\usar\\Downloads\\Portfolio\\Portfolio",
+  "appDir": "C:\\Users\\usar\\Desktop\\GitHub Project File\\Portfolio\\Portfolio",
   "relativeAppDir": "",
   "files": [
     ".next\\package.json",

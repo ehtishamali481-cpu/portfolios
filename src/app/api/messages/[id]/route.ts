@@ -4,7 +4,6 @@ import { connectMongoDB } from '@/lib/mongodb';
 import { Message } from '@/models/Message';
 import { verifyAuthToken } from '@/lib/auth';
 
-// DELETE /api/messages/[id] - Protected
 export async function DELETE(
   req: Request,
   { params }: { params: Promise<{ id: string }> }

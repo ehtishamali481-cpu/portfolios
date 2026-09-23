@@ -9,6 +9,7 @@ export interface IProject extends Document {
   github?: string;
   link?: string;
   testCasesLink?: string;
+  featured: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -23,6 +24,7 @@ const ProjectSchema = new Schema<IProject>(
     github: { type: String, trim: true, default: '' },
     link: { type: String, trim: true, default: '' },
     testCasesLink: { type: String, trim: true, default: '' },
+    featured: { type: Boolean, default: false },
   },
   {
     timestamps: true,

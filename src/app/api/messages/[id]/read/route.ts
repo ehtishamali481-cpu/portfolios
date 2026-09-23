@@ -4,7 +4,6 @@ import { connectMongoDB } from '@/lib/mongodb';
 import { Message } from '@/models/Message';
 import { verifyAuthToken } from '@/lib/auth';
 
-// PUT /api/messages/[id]/read - Toggle or mark message as read (Protected)
 export async function PUT(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
